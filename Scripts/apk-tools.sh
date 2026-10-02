@@ -10,7 +10,7 @@ mkdir -p "$PATCH_DIR"
 cat > "$PATCH_FILE" <<'PATCH'
 --- a/src/context.c
 +++ b/src/context.c
-@@ -68,7 +68,7 @@ int apk_ctx_prepare(struct apk_ctx *ac)
+@@ -66,7 +66,7 @@ int apk_ctx_prepare(struct apk_ctx *ac)
  		ac->open_flags &= ~(APK_OPENF_CREATE | APK_OPENF_WRITE);
  		ac->open_flags |= APK_OPENF_READ;
  	}
