@@ -81,3 +81,24 @@ DOCKERD_VER=$(grep -Po "^PKG_VERSION:=\K.*" ./feeds/packages/utils/dockerd/Makef
 if [ -n "$DOCKER_CLI_VER" ] && [ "$DOCKER_CLI_VER" != "$DOCKERD_VER" ]; then
 	echo "WARNING: docker ($DOCKER_CLI_VER) and dockerd ($DOCKERD_VER) versions differ, dockerd build will fail!"
 fi
+
+#修复官方源码 jdcloud_re-ss-01 缺少 EmmcImage
+IPQ60XX_MK="./target/linux/qualcommax/image/ipq60xx.mk"
+if [ -f "$IPQ60XX_MK" ] && awk '/^define Device\/jdcloud_re-ss-01$/{f=1} f&&/Device\/EmmcImage/{h=1} f&&/^endef/{exit} END{exit h?1:0}' "$IPQ60XX_MK"; then
+	awk '
+		/^define Device\/jdcloud_re-ss-01$/ { inblk=1 }
+		inblk && /\$\(call Device\/FitImage\)/ { print; print "\t$(call Device/EmmcImage)"; next }
+		inblk && /^endef/ {
+			print "\tIMAGE/factory.bin := append-kernel | pad-to $$(KERNEL_SIZE) | append-rootfs | append-metadata"
+			inblk=0
+		}
+		{ print }
+	' "$IPQ60XX_MK" > "$IPQ60XX_MK.new" && mv -f "$IPQ60XX_MK.new" "$IPQ60XX_MK"
+	if awk '/^define Device\/jdcloud_re-ss-01$/{f=1} f&&/Device\/EmmcImage/{h=1} f&&/^endef/{exit} END{exit h?0:1}' "$IPQ60XX_MK"; then
+		echo "jdcloud_re-ss-01 EmmcImage has been fixed!"
+	else
+		echo "jdcloud_re-ss-01 EmmcImage fix failed; continuing!"
+	fi
+else
+	echo "jdcloud_re-ss-01 already has EmmcImage or not found, skip!"
+fi
