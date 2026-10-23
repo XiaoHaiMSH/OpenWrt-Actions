@@ -89,6 +89,12 @@ UPDATE_PACKAGE "natmapt" "muink/openwrt-natmapt" "master"
 UPDATE_PACKAGE "stuntman" "muink/openwrt-stuntman" "master"
 UPDATE_PACKAGE "luci-app-natmapt" "muink/luci-app-natmapt" "master"
 
+UPDATE_PACKAGE "istorex" "kenzok8/openwrt-packages" "master" "pkg"
+UPDATE_PACKAGE "quickstart" "kenzok8/openwrt-packages" "master" "pkg"
+UPDATE_PACKAGE "luci-app-store" "kenzok8/openwrt-packages" "master" "pkg"
+UPDATE_PACKAGE "taskd" "kenzok8/openwrt-packages" "master" "pkg"
+UPDATE_PACKAGE "luci-lib-xterm" "kenzok8/openwrt-packages" "master" "pkg"
+
 #更新软件包版本
 UPDATE_VERSION() {
 	local PKG_NAME=$1
