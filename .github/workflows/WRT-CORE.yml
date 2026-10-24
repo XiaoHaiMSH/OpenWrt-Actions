@@ -40,6 +40,10 @@ on:
       WRT_PACKAGE:
         required: false
         type: string
+      WRT_COMMIT:
+        required: false
+        type: string
+        default: ''
       WRT_FEED_USER:
         required: false
         type: boolean
@@ -66,6 +70,7 @@ env:
   WRT_BRANCH: ${{inputs.WRT_BRANCH}}
   WRT_SOURCE: ${{inputs.WRT_SOURCE}}
   WRT_PACKAGE: ${{inputs.WRT_PACKAGE}}
+  WRT_COMMIT: ${{inputs.WRT_COMMIT}}
   WRT_FEED_USER: ${{inputs.WRT_FEED_USER}}
   WRT_FEED_HOST: ${{inputs.WRT_FEED_HOST}}
   WRT_KMOD_EXCLUDE: ${{inputs.WRT_KMOD_EXCLUDE}}
@@ -136,7 +141,21 @@ jobs:
       - name: Clone Code
         id: clone-code
         run: |
-          git clone --depth=1 --single-branch --branch $WRT_BRANCH $WRT_REPO ./wrt/
+          WRT_COMMIT=$(echo "$WRT_COMMIT" | tr -d '[:space:]' | tr 'A-Z' 'a-z')
+
+          if [ -n "$WRT_COMMIT" ]; then
+            [[ "$WRT_COMMIT" =~ ^[0-9a-f]{7,40}$ ]] || { echo "哈希格式不对"; exit 1; }
+            WRT_COMMIT=$(curl -fsSL -H "Authorization: Bearer $GITHUB_TOKEN" "https://api.github.com/repos/$WRT_SOURCE/commits/$WRT_COMMIT" | jq -r .sha)
+            [[ "$WRT_COMMIT" =~ ^[0-9a-f]{40}$ ]] || { echo "找不到该提交，或短哈希不唯一"; exit 1; }
+            echo "resolved commit: $WRT_COMMIT"
+
+            git init ./wrt/
+            git -C ./wrt remote add origin "$WRT_REPO"
+            git -C ./wrt fetch --depth=1 origin "$WRT_COMMIT"
+            git -C ./wrt checkout --detach FETCH_HEAD
+          else
+            git clone --depth=1 --single-branch --branch $WRT_BRANCH $WRT_REPO ./wrt/
+          fi
 
           cd ./wrt/
           WRT_HASH=$(git rev-parse HEAD)

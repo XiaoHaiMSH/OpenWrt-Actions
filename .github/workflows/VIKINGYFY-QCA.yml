@@ -18,6 +18,10 @@ on:
         description: '手动调整插件包，多个请用\n符号隔开。'
         required: false
         type: string
+      HASH:
+        description: '手动指定源码哈希，7位或完整均可。'
+        required: false
+        type: string
 
 #CI权限
 permissions: write-all
@@ -36,9 +40,9 @@ jobs:
         include:
           #编译用户态插件（同架构通用）
           - CONFIG: IPQ60XX
-            FEED_USER: false
-          - CONFIG: IPQ807X
             FEED_USER: true
+          - CONFIG: IPQ807X
+            FEED_USER: false
 
     #调用公用编译核心WRT-CORE.yml
     uses: ./.github/workflows/WRT-CORE.yml
@@ -65,6 +69,7 @@ jobs:
       WRT_SOURCE: ${{matrix.SOURCE}}
       #插件调整
       WRT_PACKAGE: ${{inputs.PACKAGE}}
+      WRT_COMMIT: ${{inputs.HASH}}
       #用户态插件
       WRT_FEED_USER: ${{matrix.FEED_USER}}
       #软件源域名
