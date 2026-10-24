@@ -36,9 +36,9 @@ jobs:
         include:
           #编译用户态插件（同架构通用）
           - CONFIG: IPQ60XX
-            FEED_USER: true
-          - CONFIG: IPQ807X
             FEED_USER: false
+          - CONFIG: IPQ807X
+            FEED_USER: true
 
     #调用公用编译核心WRT-CORE.yml
     uses: ./.github/workflows/WRT-CORE.yml
