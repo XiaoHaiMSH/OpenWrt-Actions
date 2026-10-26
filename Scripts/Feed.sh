@@ -42,7 +42,7 @@ make_index() {
 
 case "$1" in
 config)
-	echo "CONFIG_ALL_KMODS=y" >> .config
+	printf '\nCONFIG_ALL_KMODS=y\n' >> .config
 	#调整排除的内核模块
 	for K in $(echo "$WRT_KMOD_EXCLUDE" | tr ',\r\n' '   '); do
 		echo "# CONFIG_PACKAGE_$K is not set" >> .config
