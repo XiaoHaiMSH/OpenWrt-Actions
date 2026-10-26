@@ -1,9 +1,13 @@
 #增加插件
+CONFIG_PACKAGE_easytier=m
+CONFIG_PACKAGE_easytier-noweb=m
+CONFIG_PACKAGE_luci-app-easytier=m
+CONFIG_PACKAGE_luci-app-lucky=m
 CONFIG_PACKAGE_luci-app-istorex=m
+CONFIG_PACKAGE_luci-app-mosdns=m
 CONFIG_PACKAGE_luci-app-gecoosac=m
 CONFIG_PACKAGE_luci-app-homeproxy=m
 CONFIG_PACKAGE_luci-app-miaomiaowu=m
-CONFIG_PACKAGE_luci-app-netspeedtest=m
 #主题
 CONFIG_PACKAGE_luci-theme-shadcn=m
 CONFIG_PACKAGE_luci-theme-aurora=m
