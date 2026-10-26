@@ -4,9 +4,15 @@ set -eo pipefail
 #修改软件源域名
 FEED_HOST="${WRT_FEED_HOST:-}"
 
+EXTRA_FEEDS+=("https://github.com/XiaoHaiSly/openwrt-packages/releases/download/snapshots-arm64/packages.adb")
+
 CONF_DIR="$GITHUB_WORKSPACE/Config"
 TOP="$PWD"
 APK="$TOP/staging_dir/host/bin/apk"
+
+extra_feeds() {
+	printf '%s\n' "${EXTRA_FEEDS[@]}" | tr -d '\r' | sed -E 's/^[[:space:]]+//; s/[[:space:]]+$//' | awk 'NF && !/^#/'
+}
 
 feed_ready() {
 	[ -n "$FEED_HOST" ]
@@ -109,16 +115,24 @@ PY
 	;;
 
 firmware)
-	feed_ready || { echo "FEED_HOST not set, skip writing feed into firmware"; exit 0; }
-	[ -n "$(feed_tag)" ] || { echo "ERROR: WRT_HASH not set"; exit 1; }
-	ARCH=$(grep -oP '^CONFIG_TARGET_ARCH_PACKAGES="\K[^"]+' .config)
-	URL="https://$(feed_tag).$(feed_host)"
+	if ! feed_ready && [ -z "$(extra_feeds)" ]; then
+		echo "no feed configured, skip writing feed into firmware"; exit 0
+	fi
+	if feed_ready; then
+		[ -n "$(feed_tag)" ] || { echo "ERROR: WRT_HASH not set"; exit 1; }
+		ARCH=$(grep -oP '^CONFIG_TARGET_ARCH_PACKAGES="\K[^"]+' .config)
+		URL="https://$(feed_tag).$(feed_host)"
+	fi
+	LIST="files/etc/apk/repositories.d/extra-feeds.list"
 	mkdir -p files/etc/apk/repositories.d
-	cat > files/etc/apk/repositories.d/extra-feeds.list <<LIST
-$URL/packages/$ARCH/packages.adb
-$URL/kmods/$WRT_SUBTARGET/packages.adb
-LIST
-	cat files/etc/apk/repositories.d/extra-feeds.list
+	{
+		extra_feeds
+		if feed_ready; then
+			echo "$URL/packages/$ARCH/packages.adb"
+			echo "$URL/kmods/$WRT_SUBTARGET/packages.adb"
+		fi
+	} > "$LIST"
+	cat "$LIST"
 	;;
 
 project)
@@ -133,4 +147,3 @@ tag)
 	echo "usage: Feed.sh config|collect|firmware|project|tag"; exit 1
 	;;
 esac
-
